@@ -34,19 +34,21 @@ function Feed({ user, profileInfo, allFeedPosts }) {
       .from("white-lotus-consultancy")
       .getPublicUrl(getData.path);
 
-    console.log(data);
+    console.log("Uploaded Path:", getData.path);
+    console.log("Public URL:", data?.publicUrl);
 
-    if (data)
-      setFormData({
-        ...formData,
+    if (data?.publicUrl) {
+      setFormData((prev) => ({
+        ...prev,
         imageURL: data.publicUrl,
-      });
+      }));
+    }
   }
 
   async function handleUploadImageToSupabase() {
     const { data, error } = await supabaseClient.storage
       .from("white-lotus-consultancy")
-      .upload(`/public/${imageData?.name}`, imageData, {
+      .upload(`public/${imageData?.name}`, imageData, {
         cacheControl: "3600",
         upsert: false,
       });
@@ -124,11 +126,14 @@ function Feed({ user, profileInfo, allFeedPosts }) {
                   className="group relative -mx-4 p-6 rounded-3xl bg-gray-100 hover:bg-white hover:shadow-2xl cursor-auto shadow-2xl shadow-transparent gap-8 flex"
                 >
                   <div className="sm:w-2/6 rounded-3xl overflow-hidden transition-all duration-500 group-hover:rounded-xl">
-                    <img
-                      src={feedPostItem?.image}
-                      alt="Post"
-                      className="h-80 w-full object-cover object-top transition duration-500 group-hover:scale-105"
-                    />
+                    {feedPostItem?.image && (
+                      <img
+                        src={feedPostItem.image}
+                        alt="Post"
+                        className="h-80 w-full object-cover object-top transition duration-500 group-hover:scale-105"
+                      />
+                    )}
+
                   </div>
                   <div className="sm:p-2 sm:pl-0 sm:w-4/6">
                     <span className="mt-4 mb-2 inline-block font-medium text-gray-500 sm:mt-0">
@@ -197,7 +202,10 @@ function Feed({ user, profileInfo, allFeedPosts }) {
             </Label>
             <Button
               onClick={handleSaveFeedPost}
-              disabled={formData?.imageURL === "" && formData?.message === ""}
+              disabled={
+                (imageData && formData.imageURL === "") ||
+                (formData?.imageURL === "" && formData?.message === "")
+              }
               className="flex w-40 h-11 items-center justify-center px-5 disabled:opacity-65"
             >
               Post
